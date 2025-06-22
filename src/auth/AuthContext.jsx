@@ -5,7 +5,7 @@ import {
   login as apiLogin, 
   register as apiRegister, 
   refreshToken as apiRefreshToken 
-} from './api';  // Corrected import
+} from './api';  
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -23,36 +23,51 @@ export function AuthProvider({ children }) {
   }
 }, []);
 
-  const login = async (credentials) => {
-    try {
-      const { access, refresh, user } = await apiLogin(credentials);
-      localStorage.setItem('accessToken', access);
-      localStorage.setItem('refreshToken', refresh);
-      localStorage.setItem('user', JSON.stringify(user));
-      setAccessToken(access);
-      setUser(user);
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Login failed:', error);
-      throw error;
-    }
-  };
+ const login = async (credentials) => {
+  try {
+    const { access, refresh, user } = await apiLogin(credentials);
+    localStorage.setItem('accessToken', access);
+    localStorage.setItem('refreshToken', refresh);
+    localStorage.setItem('user', JSON.stringify(user));
+    setAccessToken(access);
+    setUser(user);
 
-  const register = async (userData) => {
-    try {
-      const { user, tokens } = await apiRegister(userData);
-      localStorage.setItem('accessToken', tokens.access);
-      localStorage.setItem('refreshToken', tokens.refresh);
-      localStorage.setItem('user', JSON.stringify(user));
-      setAccessToken(tokens.access);
-      setUser(user);
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Registration failed:', error);
-      throw error;
-    }
-  };
+    // Role-based redirect
+    if (user.role === 'admin') {
+      navigate('/admin-dashboard');
+    } else if (user.role === 'poster') {
+      navigate('/poster-dashboard');
+    } else if (user.role === 'booker') {
+      navigate('/');
+    } 
+  } catch (error) {
+    console.error('Login failed:', error);
+    throw error;
+  }
+};
 
+const register = async (userData) => {
+  try {
+    const { user, tokens } = await apiRegister(userData);
+    localStorage.setItem('accessToken', tokens.access);
+    localStorage.setItem('refreshToken', tokens.refresh);
+    localStorage.setItem('user', JSON.stringify(user));
+    setAccessToken(tokens.access);
+    setUser(user);
+
+    // Role-based redirect
+    if (user.role === 'admin') {
+      navigate('/admin-dashboard');
+    } else if (user.role === 'poster') {
+      navigate('/poster-dashboard');
+    } else if (user.role === 'booker') {
+      navigate('/');
+    } 
+  } catch (error) {
+    console.error('Registration failed:', error);
+    throw error;
+  }
+};
   const logout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
