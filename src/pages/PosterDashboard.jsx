@@ -6,13 +6,14 @@ import { Link } from "react-router-dom";
 export default function PosterDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
-  title: "",
-  description: "",
-  date: "",
-  image: null,
-  location: "",
-  duration: "",
-});
+    title: "",
+    description: "",
+    date: "",
+    image: null,
+    location: "",
+    duration: "",
+    tickets: [{ name: "", price: "", quantity: "" }],
+  });
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -45,36 +46,68 @@ export default function PosterDashboard() {
     }));
   };
 
+  // Handle ticket changes
+  const handleTicketChange = (idx, field, value) => {
+    setForm((prev) => {
+      const tickets = [...prev.tickets];
+      tickets[idx][field] = value;
+      return { ...prev, tickets };
+    });
+  };
+
+  const addTicketType = () => {
+    setForm((prev) => ({
+      ...prev,
+      tickets: [...prev.tickets, { name: "", price: "", quantity: "" }],
+    }));
+  };
+
+  const removeTicketType = (idx) => {
+    setForm((prev) => ({
+      ...prev,
+      tickets: prev.tickets.filter((_, i) => i !== idx),
+    }));
+  };
+
   // Handle form submit (create or update)
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setSubmitLoading(true);
-  setError("");
-  const formData = new FormData();
-  formData.append("title", form.title);
-  formData.append("description", form.description);
-  formData.append("date", form.date);
-  formData.append("location", form.location);
-  formData.append("duration", form.duration);
-  if (form.image) {
-    formData.append("image", form.image);
-  }
-     try {
-    if (editId) {
-      await updateEvent(editId, formData, accessToken);
-    } else {
-      await createEvent(formData, accessToken);
+    e.preventDefault();
+    setSubmitLoading(true);
+    setError("");
+    const formData = new FormData();
+    formData.append("title", form.title);
+    formData.append("description", form.description);
+    formData.append("date", form.date);
+    formData.append("location", form.location);
+    formData.append("duration", form.duration);
+    if (form.image) {
+      formData.append("image", form.image);
     }
-    setShowForm(false);
-    setForm({ title: "", description: "", date: "", image: null, location: "", duration: "" });
-    setEditId(null);
-    const res = await getMyEvents(accessToken);
-    setEvents(res.data);
-  } catch (err) {
-    setError("Failed to save event.");
-  } finally {
-    setSubmitLoading(false);
-  }
+    formData.append("tickets", JSON.stringify(form.tickets));
+    try {
+      if (editId) {
+        await updateEvent(editId, formData, accessToken);
+      } else {
+        await createEvent(formData, accessToken);
+      }
+      setShowForm(false);
+      setForm({
+        title: "",
+        description: "",
+        date: "",
+        image: null,
+        location: "",
+        duration: "",
+        tickets: [{ name: "", price: "", quantity: "" }],
+      });
+      setEditId(null);
+      const res = await getMyEvents(accessToken);
+      setEvents(res.data);
+    } catch (err) {
+      setError("Failed to save event.");
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
   // Handle delete
@@ -82,7 +115,7 @@ export default function PosterDashboard() {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
     try {
       await deleteEvent(id, accessToken);
-      setEvents(events.filter(event => event.id !== id));
+      setEvents(events.filter((event) => event.id !== id));
     } catch (err) {
       alert("Failed to delete event.");
     }
@@ -90,22 +123,38 @@ export default function PosterDashboard() {
 
   // Handle edit
   const handleEdit = (event) => {
-  setForm({
-    title: event.title,
-    description: event.description,
-    date: event.date.slice(0, 16),
-    image: null,
-    location: event.location || "",
-    duration: event.duration || "",
-  });
-  setEditId(event.id);
-  setShowForm(true);
-};
+    setForm({
+      title: event.title,
+      description: event.description,
+      date: event.date.slice(0, 16),
+      image: null,
+      location: event.location || "",
+      duration: event.duration || "",
+      tickets:
+        event.tickets && event.tickets.length > 0
+          ? event.tickets.map((t) => ({
+              name: t.name,
+              price: t.price,
+              quantity: t.quantity,
+            }))
+          : [{ name: "", price: "", quantity: "" }],
+    });
+    setEditId(event.id);
+    setShowForm(true);
+  };
 
   // Cancel edit
   const handleCancel = () => {
     setShowForm(false);
-    setForm({ title: "", description: "", date: "", image: null });
+    setForm({
+      title: "",
+      description: "",
+      date: "",
+      image: null,
+      location: "",
+      duration: "",
+      tickets: [{ name: "", price: "", quantity: "" }],
+    });
     setEditId(null);
     setError("");
   };
@@ -126,7 +175,19 @@ export default function PosterDashboard() {
             Poster Dashboard
           </h1>
           <button
-            onClick={() => { setShowForm(true); setEditId(null); setForm({ title: "", description: "", date: "", image: null }); }}
+            onClick={() => {
+              setShowForm(true);
+              setEditId(null);
+              setForm({
+                title: "",
+                description: "",
+                date: "",
+                image: null,
+                location: "",
+                duration: "",
+                tickets: [{ name: "", price: "", quantity: "" }],
+              });
+            }}
             className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg"
           >
             + Add New Event
@@ -183,28 +244,76 @@ export default function PosterDashboard() {
                 required
               />
             </div>
-             <div>
-  <label className="block text-gray-400 font-medium mb-1">Location</label>
-  <input
-    type="text"
-    name="location"
-    value={form.location}
-    onChange={handleChange}
-    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-    placeholder="e.g. Nairobi, Online, etc."
-  />
-</div>
-<div>
-  <label className="block text-gray-400 font-medium mb-1">Duration</label>
-  <input
-    type="text"
-    name="duration"
-    value={form.duration}
-    onChange={handleChange}
-    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-    placeholder="e.g. 2 hours"
-  />
-</div>
+            <div>
+              <label className="block text-gray-400 font-medium mb-1">Location</label>
+              <input
+                type="text"
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g. Nairobi, Online, etc."
+              />
+            </div>
+            <div>
+              <label className="block text-gray-400 font-medium mb-1">Duration</label>
+              <input
+                type="text"
+                name="duration"
+                value={form.duration}
+                onChange={handleChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g. 2 hours"
+              />
+            </div>
+            {/* Ticket Types Section */}
+            <div>
+              <label className="block text-gray-400 font-medium mb-1">Ticket Types</label>
+              {form.tickets.map((ticket, idx) => (
+                <div key={idx} className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="Type (e.g. Regular, VIP)"
+                    value={ticket.name}
+                    onChange={e => handleTicketChange(idx, "name", e.target.value)}
+                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1 text-white w-1/3"
+                    required
+                  />
+                  <input
+                    type="number"
+                    placeholder="Price"
+                    value={ticket.price}
+                    onChange={e => handleTicketChange(idx, "price", e.target.value)}
+                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1 text-white w-1/3"
+                    required
+                  />
+                  <input
+                    type="number"
+                    placeholder="Quantity"
+                    value={ticket.quantity}
+                    onChange={e => handleTicketChange(idx, "quantity", e.target.value)}
+                    className="bg-gray-700 border border-gray-600 rounded-lg px-2 py-1 text-white w-1/3"
+                    required
+                  />
+                  {form.tickets.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeTicketType(idx)}
+                      className="text-red-400 hover:text-red-300 ml-2"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addTicketType}
+                className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                + Add Ticket Type
+              </button>
+            </div>
             <div>
               <label className="block text-gray-400 font-medium mb-1">Image (optional)</label>
               <div className="flex items-center justify-center w-full">
@@ -274,45 +383,114 @@ export default function PosterDashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {events.map((event) => (
-                <div key={event.id} className="bg-gray-700/50 border border-gray-600 rounded-xl overflow-hidden hover:shadow-lg transition-all hover:border-gray-500">
-                  {event.image && (
-                    <img
-                      src={event.image}
-                      alt={event.title}
-                      className="h-48 w-full object-cover"
-                    />
-                  )}
-                  <div className="p-4">
-                    <h3 className="text-lg font-bold text-white mb-1">{event.title}</h3>
-                    <div className="text-gray-400 text-sm mb-3 flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      {new Date(event.date).toLocaleString()}
-                    </div>
-                    <p className="text-gray-300">{event.description}</p>
-                    <div className="mt-4 pt-3 border-t border-gray-600 flex justify-end gap-4">
-                      <Link to={`/events/${event.id}`} className="text-sm text-blue-400 hover:text-blue-300">
-                        View Details
-                      </Link>
-                      <button
-                        onClick={() => handleEdit(event)}
-                        className="text-sm text-yellow-400 hover:text-yellow-300 ml-2"
-                        title="Edit"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(event.id)}
-                        className="text-sm text-red-400 hover:text-red-300 ml-2"
-                        title="Delete"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
+  <div key={event.id} className="bg-gray-700/50 border border-gray-600 rounded-xl overflow-hidden hover:shadow-lg transition-all hover:border-gray-500 group flex flex-col h-full">
+    {event.image && (
+      <div className="h-48 w-full overflow-hidden relative">
+        <img
+          src={event.image}
+          alt={event.title}
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+        {/* Ticket summary overlay */}
+        {event.tickets && event.tickets.length > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-white text-sm font-medium">
+                Tickets from Ksh {Math.min(...event.tickets.map(t => t.price))}
+              </span>
+              <span className="text-xs bg-blue-500/90 text-white px-2 py-1 rounded-full">
+                {event.tickets.length} type{event.tickets.length > 1 ? 's' : ''}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    )}
+    
+    <div className="p-4 flex flex-col flex-grow">
+      <div className="flex-grow">
+        <div className="flex justify-between items-start">
+          <h3 className="text-lg font-bold text-white mb-1 line-clamp-1">{event.title}</h3>
+          <div className="text-xs text-gray-400 bg-gray-600/50 px-2 py-1 rounded-full">
+            {new Date(event.date).toLocaleDateString()}
+          </div>
+        </div>
+        
+        <div className="flex items-center text-gray-400 text-sm mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span className="line-clamp-1">{event.location || 'Online'}</span>
+        </div>
+        
+        {/* Compact ticket display */}
+        {event.tickets && event.tickets.length > 0 && (
+          <div className="mb-3">
+            <div className="flex items-center text-xs text-gray-400 mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+              </svg>
+              Tickets available
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {event.tickets.slice(0, 3).map((ticket, idx) => (
+                <div 
+                  key={idx} 
+                  className="text-xs bg-gray-600/50 text-gray-300 px-2 py-1 rounded-full border border-gray-500 flex items-center"
+                  title={`${ticket.name}: Ksh ${ticket.price} (${ticket.quantity} left)`}
+                >
+                  <span className="truncate max-w-[60px]">{ticket.name}</span>
+                  <span className="text-blue-300 ml-1">Ksh{ticket.price}</span>
                 </div>
               ))}
+              {event.tickets.length > 3 && (
+                <div className="text-xs bg-gray-600/50 text-gray-300 px-2 py-1 rounded-full">
+                  +{event.tickets.length - 3} more
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* This section will always stay at the bottom */}
+      <div className="mt-auto pt-3 border-t border-gray-600">
+        <div className="flex justify-between items-center">
+          <Link 
+            to={`/events/${event.id}`} 
+            className="text-sm text-blue-400 hover:text-blue-300 flex items-center"
+          >
+            View Details
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleEdit(event)}
+              className="text-yellow-400 hover:text-yellow-300"
+              title="Edit"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => handleDelete(event.id)}
+              className="text-red-400 hover:text-red-300"
+              title="Delete"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+))}
             </div>
           )}
         </div>

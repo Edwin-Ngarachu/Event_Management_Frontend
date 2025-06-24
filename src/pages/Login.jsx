@@ -92,7 +92,7 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Add this to your tailwind.config.js for animations */}
+      {/* Animated background elements */}
       <style jsx>{`
         @keyframes blob {
           0% { transform: translate(0px, 0px) scale(1); }
