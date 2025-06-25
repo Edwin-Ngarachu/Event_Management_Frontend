@@ -10,23 +10,25 @@ import BookerDashboard from "./pages/BookerDashboard";
 import Home from "./pages/Home";
 import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
+import Success from "./pages/Success";
 
 function App() {
   return (
     <AuthProvider>
       <Navbar />
       <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route element={<PrivateRoute />}>
-            <Route path="/booker-dashboard" element={<BookerDashboard />} />
-            <Route path="/poster-dashboard" element={<PosterDashboard />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/events/:id" element={<EventDetails />} />
-          </Route>
-        </Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/success" element={<Success />} />
+        <Route element={<PrivateRoute />}>
+          <Route path="/booker-dashboard" element={<BookerDashboard />} />
+          <Route path="/poster-dashboard" element={<PosterDashboard />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/events/:id" element={<EventDetails />} />
+        </Route>
+      </Routes>
     </AuthProvider>
   );
 }

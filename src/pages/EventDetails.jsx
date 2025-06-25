@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { loadStripe } from "@stripe/stripe-js";
 
- // Replace with your Stripe public key
+// Replace with your Stripe public key
 export default function EventDetail() {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
@@ -12,7 +12,9 @@ export default function EventDetail() {
   const [ticketQuantity, setTicketQuantity] = useState(1);
 
   // At the top of your file
-  const stripePromise = loadStripe("pk_test_51RdDx6K3G9Vl7aFZNUF9ITR2olPscVpAlDgIJloffanhSqRThtJfYGCiJtbJCQTPuas3somNsJpw2fBSOyWPxdCY001PJL4sDi"); // Replace with your Stripe public key
+  const stripePromise = loadStripe(
+    "pk_test_51RdDx6K3G9Vl7aFZNUF9ITR2olPscVpAlDgIJloffanhSqRThtJfYGCiJtbJCQTPuas3somNsJpw2fBSOyWPxdCY001PJL4sDi"
+  ); // Replace with your Stripe public key
 
   // ...inside your component...
   const handleCheckout = async () => {
@@ -180,31 +182,44 @@ export default function EventDetail() {
               Available Tickets
             </h3>
             <div className="space-y-4">
-              {event.tickets.map((ticket) => (
-                <div
-                  key={ticket.id || ticket.name}
-                  className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                    selectedTicket?.name === ticket.name
-                      ? "border-blue-500 bg-blue-500/10"
-                      : "border-gray-600 hover:border-gray-500"
-                  }`}
-                  onClick={() => setSelectedTicket(ticket)}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="text-lg font-medium text-white">
-                        {ticket.name}
-                      </h4>
-                      <p className="text-gray-400 text-sm">
-                        Ksh {ticket.price} each
-                      </p>
-                    </div>
-                    <div className="text-blue-400 font-medium">
-                      {ticket.quantity} available
+              {event.tickets.map((ticket) => {
+                const soldOut = ticket.quantity === 0;
+                return (
+                  <div
+                    key={ticket.id || ticket.name}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      soldOut
+                        ? "border-gray-700 bg-gray-700/40 opacity-50 cursor-not-allowed"
+                        : selectedTicket?.name === ticket.name
+                        ? "border-blue-500 bg-blue-500/10 cursor-pointer"
+                        : "border-gray-600 hover:border-gray-500 cursor-pointer"
+                    }`}
+                    onClick={() => {
+                      if (!soldOut) setSelectedTicket(ticket);
+                    }}
+                    tabIndex={soldOut ? -1 : 0}
+                    aria-disabled={soldOut}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="text-lg font-medium text-white">
+                          {ticket.name}
+                        </h4>
+                        <p className="text-gray-400 text-sm">
+                          Ksh {ticket.price} each
+                        </p>
+                      </div>
+                      <div
+                        className={`font-medium ${
+                          soldOut ? "text-red-400" : "text-blue-400"
+                        }`}
+                      >
+                        {soldOut ? "Sold Out" : `${ticket.quantity} available`}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {selectedTicket && (
