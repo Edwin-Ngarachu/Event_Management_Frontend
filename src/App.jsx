@@ -21,12 +21,12 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/success" element={<Success />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/events/:id" element={<EventDetails />} />
         <Route element={<PrivateRoute />}>
           <Route path="/booker-dashboard" element={<BookerDashboard />} />
           <Route path="/poster-dashboard" element={<PosterDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/events/:id" element={<EventDetails />} />
         </Route>
       </Routes>
     </AuthProvider>

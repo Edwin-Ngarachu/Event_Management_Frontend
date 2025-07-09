@@ -1,26 +1,29 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { loadStripe } from "@stripe/stripe-js";
 
 // Replace with your Stripe public key
 export default function EventDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [ticketQuantity, setTicketQuantity] = useState(1);
 
-  // At the top of your file
   const stripePromise = loadStripe(
     "pk_test_51RdDx6K3G9Vl7aFZNUF9ITR2olPscVpAlDgIJloffanhSqRThtJfYGCiJtbJCQTPuas3somNsJpw2fBSOyWPxdCY001PJL4sDi"
   ); // Replace with your Stripe public key
 
-  // ...inside your component...
   const handleCheckout = async () => {
-    if (!selectedTicket) return;
+  const token = localStorage.getItem("accessToken");  // Changed from "access" to "accessToken"
+  if (!token) {
+    navigate("/login", { state: { from: `/events/${id}` } });
+    return;
+  }
 
-    // Optionally, you can show a loading state here
+    if (!selectedTicket) return;
 
     try {
       // Call your backend to create a Stripe Checkout session
@@ -38,10 +41,10 @@ export default function EventDetail() {
       const stripe = await stripePromise;
       await stripe.redirectToCheckout({ sessionId });
     } catch (err) {
-      // Handle error (show message to user)
       alert("Failed to start checkout. Please try again.");
     }
   };
+
   useEffect(() => {
     axios
       .get(`http://127.0.0.1:8000/api/events/${id}/`)
