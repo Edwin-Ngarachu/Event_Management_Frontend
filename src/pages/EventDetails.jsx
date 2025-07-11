@@ -28,7 +28,7 @@ export default function EventDetail() {
     try {
       // Call your backend to create a Stripe Checkout session
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/create-checkout-session/",
+        "https://event-management-kq5b.onrender.com/api/create-checkout-session/",
         {
           event_id: event.id,
           ticket_id: selectedTicket.id,
@@ -47,7 +47,7 @@ export default function EventDetail() {
 
   useEffect(() => {
     axios
-      .get(`http://127.0.0.1:8000/api/events/${id}/`)
+      .get(`https://event-management-kq5b.onrender.com/api/events/${id}/`)
       .then((res) => setEvent(res.data))
       .finally(() => setLoading(false));
   }, [id]);

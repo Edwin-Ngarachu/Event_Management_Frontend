@@ -1,7 +1,7 @@
 // src/auth/api.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/auth/';
+const API_URL = 'https://event-management-kq5b.onrender.com/api/auth/';
 
 export const login = async (credentials) => {
   const response = await axios.post(`${API_URL}login/`, credentials);

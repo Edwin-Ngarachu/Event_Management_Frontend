@@ -11,7 +11,7 @@ export default function Events() {
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:8000/api/events/")
+      .get("https://event-management-kq5b.onrender.com/api/events/")
       .then((res) => setEvents(res.data))
       .catch(() => setEvents([]))
       .finally(() => setLoading(false));

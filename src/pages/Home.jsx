@@ -28,7 +28,7 @@ export default function Home() {
               Event Experiences
             </h1>
             <p className="text-xl text-gray-300 mb-10">
-              The next-generation platform for creators and attendees. Powered by blockchain-secured ticketing and AI recommendations.
+              The next-generation platform for creators and attendees. Powered by secured-ticketing and Stripe payments.
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -55,9 +55,9 @@ export default function Home() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-6 pb-20">
           {[
             { icon: "⚡", title: "Instant Booking" },
-            { icon: "🔒", title: "NFT Tickets" },
-            { icon: "🤖", title: "AI Curation" },
-            { icon: "🌐", title: "Metaverse Ready" }
+            { icon: "🔒", title: "multi Ticketing" },
+            { icon: "🤖", title: "Stripe Payments" },
+            { icon: "🌐", title: "Trusted Platform" }
           ].map((item, i) => (
             <div key={i} className="bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-all">
               <div className="text-2xl mb-2">{item.icon}</div>

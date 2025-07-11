@@ -44,7 +44,7 @@ export default function PosterDashboard() {
 
         const token = localStorage.getItem("accessToken");
         const bookingsRes = await axios.get(
-          "http://127.0.0.1:8000/api/events/my-bookings/",
+          "https://event-management-kq5b.onrender.com/api/events/my-bookings/",
           {
             headers: { Authorization: `Bearer ${token}` },
           }

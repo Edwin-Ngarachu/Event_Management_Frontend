@@ -10,7 +10,7 @@ function BookerDashboard() {
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     axios
-      .get("http://127.0.0.1:8000/api/bookings/mine/", {
+      .get("https://event-management-kq5b.onrender.com/api/bookings/mine/", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setBookings(res.data))

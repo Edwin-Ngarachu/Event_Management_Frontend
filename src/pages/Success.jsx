@@ -112,7 +112,7 @@ const handleDownloadReceipt = () => {
 };
   useEffect(() => {
     if (sessionId) {
-      axios.post("http://127.0.0.1:8000/api/confirm-payment/", { session_id: sessionId })
+      axios.post("https://event-management-kq5b.onrender.com/api/confirm-payment/", { session_id: sessionId })
         .then(res => {
           setDetails(res.data);
         })
